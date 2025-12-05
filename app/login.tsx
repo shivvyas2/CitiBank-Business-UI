@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -87,9 +88,11 @@ export default function LoginScreen() {
           keyboardShouldPersistTaps="handled">
           <View style={styles.header}>
             <View style={styles.logoContainer}>
-              <View style={styles.chaseLogo}>
-                <View style={styles.logoInner} />
-              </View>
+              <Image
+                source={require('@/assets/chase-logo-transparent.png')}
+                style={styles.chaseLogo}
+                resizeMode="contain"
+              />
             </View>
             <Text style={styles.title}>Welcome Back</Text>
             <Text style={styles.subtitle}>Sign in to your account</Text>
@@ -183,27 +186,8 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   chaseLogo: {
-    width: 80,
+    width: 200,
     height: 80,
-    backgroundColor: '#0066CC',
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  logoInner: {
-    width: 40,
-    height: 40,
-    backgroundColor: 'white',
-    borderRadius: 4,
-    transform: [{ rotate: '45deg' }],
   },
   title: {
     fontSize: 28,
