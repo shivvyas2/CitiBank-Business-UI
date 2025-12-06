@@ -19,42 +19,49 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: 'white',
           borderTopWidth: 0,
-          height: 80,
-          paddingBottom: 20,
-          paddingTop: 8,
+          height: 90,
+          paddingBottom: 24,
+          paddingTop: 12,
+          paddingHorizontal: 16,
+          marginHorizontal: 12,
+          marginBottom: 12,
+          borderRadius: 24,
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
           shadowColor: '#000',
           shadowOffset: {
             width: 0,
             height: -2,
           },
-          shadowOpacity: 0.1,
-          shadowRadius: 4,
-          elevation: 8,
+          shadowOpacity: 0.15,
+          shadowRadius: 12,
+          elevation: 12,
         },
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: '500',
-          marginTop: 4,
+          fontWeight: '600',
+          marginTop: 6,
+          letterSpacing: 0.2,
         },
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Accounts',
+          title: 'Home',
           tabBarIcon: ({ color, focused }) => (
             <View style={styles.iconContainer}>
-              <IconSymbol size={24} name="creditcard" color={focused ? '#0066CC' : color} />
+              <IconSymbol size={24} name="house.fill" color={focused ? '#0066CC' : color} />
             </View>
           ),
         }}
       />
       <Tabs.Screen
-        name="pay-transfer"
+        name="accounts"
         options={{
-          title: 'Pay & transfer',
+          title: 'Accounts',
           tabBarIcon: ({ color, focused }) => (
             <View style={styles.iconContainer}>
-              <IconSymbol size={24} name="dollarsign.circle" color={focused ? '#0066CC' : color} />
+              <IconSymbol size={24} name="building.2.fill" color={focused ? '#0066CC' : color} />
             </View>
           ),
         }}
@@ -64,21 +71,44 @@ export default function TabLayout() {
         options={{
           title: 'Credit Journey',
           tabBarIcon: ({ color, focused }) => (
-            <View style={styles.iconContainer}>
-              <IconSymbol size={24} name="chart.bar" color={focused ? '#0066CC' : color} />
+            <View style={styles.centerIconContainer}>
+              <IconSymbol size={28} name="chart.bar.fill" color={focused ? '#0066CC' : '#666'} />
             </View>
           ),
         }}
       />
       <Tabs.Screen
-        name="more"
+        name="approvals"
         options={{
-          title: 'More',
+          title: 'Approvals',
           tabBarIcon: ({ color, focused }) => (
             <View style={styles.iconContainer}>
-              <IconSymbol size={24} name="line.3.horizontal" color={focused ? '#0066CC' : color} />
+              <IconSymbol size={24} name="checkmark.circle.fill" color={focused ? '#0066CC' : color} />
             </View>
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="pay-transfer"
+        options={{
+          title: 'Payments',
+          tabBarIcon: ({ color, focused }) => (
+            <View style={styles.iconContainer}>
+              <IconSymbol size={24} name="arrow.left.arrow.right" color={focused ? '#0066CC' : color} />
+            </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="deposits"
+        options={{
+          href: null, // Hide from tab bar
+        }}
+      />
+      <Tabs.Screen
+        name="more"
+        options={{
+          href: null, // Hide from tab bar
         }}
       />
     </Tabs>
@@ -89,6 +119,17 @@ const styles = StyleSheet.create({
   iconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 8,
+    minWidth: 48,
+    minHeight: 48,
+    marginHorizontal: 4,
+  },
+  centerIconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 10,
+    minWidth: 56,
+    minHeight: 56,
+    marginHorizontal: 4,
   },
 });
-

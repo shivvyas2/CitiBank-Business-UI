@@ -127,7 +127,7 @@ export default function SignupScreen() {
   //               <IconSymbol name="chevron.left" size={24} color="#0066CC" />
   //             </TouchableOpacity>
   //             <View style={styles.logoContainer}>
-  //               <View style={styles.chaseLogo}>
+  //               <View style={styles.citibankLogo}>
   //                 <View style={styles.logoInner} />
   //               </View>
   //             </View>
@@ -182,7 +182,7 @@ export default function SignupScreen() {
               <IconSymbol name="chevron.left" size={24} color="#0066CC" />
             </TouchableOpacity>
             <View style={styles.logoContainer}>
-              <View style={styles.chaseLogo}>
+              <View style={styles.citibankLogo}>
                 <View style={styles.logoInner} />
               </View>
             </View>
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     marginTop: 20,
   },
-  chaseLogo: {
+  citibankLogo: {
     width: 60,
     height: 60,
     backgroundColor: '#0066CC',

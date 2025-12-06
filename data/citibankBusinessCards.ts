@@ -1,11 +1,11 @@
 /**
- * All 11 Chase Business Credit Cards with their profiles
+ * All 11 Citibank Business Credit Cards with their profiles
  * Used for recommendations and approval likelihood calculations
  */
 
-import { ChaseCardProfile } from '@/services/chaseApprovalService';
+import { CitibankCardProfile } from '@/services/citibankApprovalService';
 
-export interface ChaseBusinessCard {
+export interface CitibankBusinessCard {
   id: string;
   cardId?: string; // Optional cardId for tracking (defaults to id if not provided)
   cardName: string;
@@ -26,15 +26,15 @@ export interface ChaseBusinessCard {
   reason?: string;
   suggestedUsage?: string;
   applyUrl?: string;
-  detailsUrl?: string; // URL to the card's detail page on Chase website
+  detailsUrl?: string; // URL to the card's detail page on Citibank website
   fitScore?: number;
 }
 
-export const CHASE_BUSINESS_CARDS: ChaseBusinessCard[] = [
+export const CITIBANK_BUSINESS_CARDS: CitibankBusinessCard[] = [
   {
-    id: 'chase-ink-business-cash',
-    cardId: 'chase-ink-business-cash',
-    cardName: 'Chase Ink Business Cash',
+    id: 'citibank-ink-business-cash',
+    cardId: 'citibank-ink-business-cash',
+    cardName: 'Citibank Business Cash',
     difficultyRating: 'Easy',
     minPersonalFico: 680,
     minBusinessRevenue: 0,
@@ -59,9 +59,9 @@ export const CHASE_BUSINESS_CARDS: ChaseBusinessCard[] = [
     fitScore: 0.85,
   },
   {
-    id: 'chase-ink-business-unlimited',
-    cardId: 'chase-ink-business-unlimited',
-    cardName: 'Chase Ink Business Unlimited',
+    id: 'citibank-ink-business-unlimited',
+    cardId: 'citibank-ink-business-unlimited',
+    cardName: 'Citibank Business Unlimited',
     difficultyRating: 'Easy',
     minPersonalFico: 680,
     minBusinessRevenue: 0,
@@ -86,9 +86,9 @@ export const CHASE_BUSINESS_CARDS: ChaseBusinessCard[] = [
     fitScore: 0.80,
   },
   {
-    id: 'chase-ink-business-preferred',
-    cardId: 'chase-ink-business-preferred',
-    cardName: 'Chase Ink Business Preferred',
+    id: 'citibank-ink-business-preferred',
+    cardId: 'citibank-ink-business-preferred',
+    cardName: 'Citibank Business Preferred',
     difficultyRating: 'Medium',
     minPersonalFico: 720,
     minBusinessRevenue: 50000,
@@ -113,9 +113,9 @@ export const CHASE_BUSINESS_CARDS: ChaseBusinessCard[] = [
     fitScore: 0.90,
   },
   {
-    id: 'chase-ink-business-premier',
-    cardId: 'chase-ink-business-premier',
-    cardName: 'Chase Ink Business Premier',
+    id: 'citibank-ink-business-premier',
+    cardId: 'citibank-ink-business-premier',
+    cardName: 'Citibank Business Premier',
     difficultyRating: 'Medium',
     minPersonalFico: 700,
     minBusinessRevenue: 100000,
@@ -130,19 +130,19 @@ export const CHASE_BUSINESS_CARDS: ChaseBusinessCard[] = [
     },
     benefits: [
       '2.5% cash back on all purchases',
-      '5% cash back on travel purchased through Chase',
+      '5% cash back on travel purchased through Citibank',
       'No foreign transaction fees',
       'Employee cards at no additional cost',
       'Cell phone protection'
     ],
     reason: 'Premium business card with high flat-rate rewards. Best for businesses with consistent high spending.',
-    suggestedUsage: 'Use for all business expenses to earn 2.5% cash back. Book travel through Chase for 5% cash back.',
+    suggestedUsage: 'Use for all business expenses to earn 2.5% cash back. Book travel through Citibank for 5% cash back.',
     fitScore: 0.75,
   },
   {
-    id: 'chase-sapphire-reserve-business',
-    cardId: 'chase-sapphire-reserve-business',
-    cardName: 'Chase Sapphire Reserve Business',
+    id: 'citibank-sapphire-reserve-business',
+    cardId: 'citibank-sapphire-reserve-business',
+    cardName: 'Citibank Sapphire Reserve Business',
     difficultyRating: 'Hard',
     minPersonalFico: 750,
     minBusinessRevenue: 200000,
@@ -169,9 +169,9 @@ export const CHASE_BUSINESS_CARDS: ChaseBusinessCard[] = [
     fitScore: 0.95,
   },
   {
-    id: 'chase-ink-business-flex',
-    cardId: 'chase-ink-business-flex',
-    cardName: 'Chase Ink Business Flex',
+    id: 'citibank-ink-business-flex',
+    cardId: 'citibank-ink-business-flex',
+    cardName: 'Citibank Business Flex',
     difficultyRating: 'Easy',
     minPersonalFico: 680,
     minBusinessRevenue: 0,
@@ -196,9 +196,9 @@ export const CHASE_BUSINESS_CARDS: ChaseBusinessCard[] = [
     fitScore: 0.82,
   },
   {
-    id: 'chase-ink-business-platinum',
-    cardId: 'chase-ink-business-platinum',
-    cardName: 'Chase Ink Business Platinum',
+    id: 'citibank-ink-business-platinum',
+    cardId: 'citibank-ink-business-platinum',
+    cardName: 'Citibank Business Platinum',
     difficultyRating: 'Easy',
     minPersonalFico: 650,
     minBusinessRevenue: 0,
@@ -218,14 +218,14 @@ export const CHASE_BUSINESS_CARDS: ChaseBusinessCard[] = [
       'Purchase protection',
       'Extended warranty'
     ],
-    reason: 'Simple business card with straightforward rewards. Easiest Chase business card to get approved for.',
+    reason: 'Simple business card with straightforward rewards. Easiest Citibank business card to get approved for.',
     suggestedUsage: 'Use for all business expenses. Simple 1% cash back with no category tracking needed.',
     fitScore: 0.70,
   },
   {
-    id: 'chase-ink-business-premier-plus',
-    cardId: 'chase-ink-business-premier-plus',
-    cardName: 'Chase Ink Business Premier Plus',
+    id: 'citibank-ink-business-premier-plus',
+    cardId: 'citibank-ink-business-premier-plus',
+    cardName: 'Citibank Business Premier Plus',
     difficultyRating: 'Medium',
     minPersonalFico: 720,
     minBusinessRevenue: 150000,
@@ -251,9 +251,9 @@ export const CHASE_BUSINESS_CARDS: ChaseBusinessCard[] = [
     fitScore: 0.88,
   },
   {
-    id: 'chase-ink-business-travel',
-    cardId: 'chase-ink-business-travel',
-    cardName: 'Chase Ink Business Travel',
+    id: 'citibank-ink-business-travel',
+    cardId: 'citibank-ink-business-travel',
+    cardName: 'Citibank Business Travel',
     difficultyRating: 'Medium',
     minPersonalFico: 700,
     minBusinessRevenue: 75000,
@@ -279,9 +279,9 @@ export const CHASE_BUSINESS_CARDS: ChaseBusinessCard[] = [
     fitScore: 0.85,
   },
   {
-    id: 'chase-ink-business-rewards',
-    cardId: 'chase-ink-business-rewards',
-    cardName: 'Chase Ink Business Rewards',
+    id: 'citibank-ink-business-rewards',
+    cardId: 'citibank-ink-business-rewards',
+    cardName: 'Citibank Business Rewards',
     difficultyRating: 'Easy',
     minPersonalFico: 680,
     minBusinessRevenue: 0,
@@ -306,9 +306,9 @@ export const CHASE_BUSINESS_CARDS: ChaseBusinessCard[] = [
     fitScore: 0.78,
   },
   {
-    id: 'chase-ink-business-elite',
-    cardId: 'chase-ink-business-elite',
-    cardName: 'Chase Ink Business Elite',
+    id: 'citibank-ink-business-elite',
+    cardId: 'citibank-ink-business-elite',
+    cardName: 'Citibank Business Elite',
     difficultyRating: 'Hard',
     minPersonalFico: 760,
     minBusinessRevenue: 500000,
@@ -335,27 +335,92 @@ export const CHASE_BUSINESS_CARDS: ChaseBusinessCard[] = [
     suggestedUsage: 'Maximize 10X points on travel and dining. Use for advertising to earn 5X points. Best for businesses with very high spending.',
     fitScore: 0.98,
   },
+  {
+    id: 'costco-anywhere-visa-citi',
+    cardId: 'costco-anywhere-visa-citi',
+    cardName: 'Costco Anywhere Visa® Card by Citi',
+    // cardImage will be provided by getCardImageSource function
+    difficultyRating: 'Easy',
+    minPersonalFico: 680,
+    minBusinessRevenue: 0,
+    minBusinessAge: 0,
+    expectedApprovalCLRange: { min: 5000, max: 50000 },
+    subDifficultyIndex: 3,
+    rewardCategoryAlignment: ['Gas', 'Restaurants', 'Travel', 'Costco'],
+    underwriterToleranceLevel: 'High',
+    bonusOffer: {
+      amount: 'No sign-up bonus',
+      condition: 'Earn cash back on every purchase'
+    },
+    benefits: [
+      '5% cash back on gas at Costco and 4% on other eligible gas and EV charging (first $7,000/year, then 1%)',
+      '3% cash back on restaurants and eligible travel worldwide',
+      '2% cash back on all other purchases from Costco and Costco.com',
+      '1% cash back on all other purchases',
+      'No annual fee',
+      'Exclusively for Costco members',
+      'Annual reward certificate redeemable at Costco warehouses'
+    ],
+    reason: 'Perfect for Costco members who want to maximize cash back on gas, restaurants, and travel. Great rewards structure with no annual fee.',
+    suggestedUsage: 'Use for gas purchases at Costco (5% cash back) and other gas stations (4% cash back up to $7,000/year). Maximize 3% cash back on restaurants and travel. Use for all Costco purchases to earn 2% cash back.',
+    fitScore: 0.85,
+    applyUrl: 'https://www.citi.com/credit-cards/costco',
+    detailsUrl: 'https://www.citi.com/credit-cards/costco',
+  },
+  {
+    id: 'costco-anywhere-visa-business-citi',
+    cardId: 'costco-anywhere-visa-business-citi',
+    cardName: 'Costco Anywhere Visa® Business Card by Citi',
+    // cardImage will be provided by getCardImageSource function
+    difficultyRating: 'Easy',
+    minPersonalFico: 680,
+    minBusinessRevenue: 0,
+    minBusinessAge: 0,
+    expectedApprovalCLRange: { min: 5000, max: 50000 },
+    subDifficultyIndex: 3,
+    rewardCategoryAlignment: ['Gas', 'Restaurants', 'Travel', 'Costco'],
+    underwriterToleranceLevel: 'High',
+    bonusOffer: {
+      amount: 'No sign-up bonus',
+      condition: 'Earn cash back rewards for your business on every purchase'
+    },
+    benefits: [
+      '5% cash back on gas at Costco and 4% on other eligible gas and EV charging (first $7,000/year, then 1%)',
+      '3% cash back on restaurants and eligible travel, including Costco Travel',
+      '2% cash back on all other purchases from Costco and Costco.com',
+      '1% cash back on all other purchases',
+      'No annual fee',
+      'Exclusively for Costco members',
+      'Annual credit card reward certificate in February billing statements',
+      'Redeemable for cash or merchandise at US Costco Warehouses'
+    ],
+    reason: 'The only business credit card designed exclusively for Costco members. Earn cash back rewards for your business on purchases anywhere Visa is accepted.',
+    suggestedUsage: 'Use for business gas purchases at Costco (5% cash back) and other gas stations (4% cash back up to $7,000/year). Maximize 3% cash back on business restaurants and travel expenses. Use for all Costco business purchases to earn 2% cash back.',
+    fitScore: 0.88,
+    applyUrl: 'https://www.citi.com/credit-cards/costco-business',
+    detailsUrl: 'https://www.citi.com/credit-cards/costco-business',
+  },
 ];
 
 /**
- * Get all Chase business cards
+ * Get all Citibank business cards
  */
-export function getAllChaseBusinessCards(): ChaseBusinessCard[] {
-  return CHASE_BUSINESS_CARDS;
+export function getAllCitibankBusinessCards(): CitibankBusinessCard[] {
+  return CITIBANK_BUSINESS_CARDS;
 }
 
 /**
  * Get card by ID
  */
-export function getChaseBusinessCardById(id: string): ChaseBusinessCard | undefined {
-  return CHASE_BUSINESS_CARDS.find(card => card.id === id);
+export function getCitibankBusinessCardById(id: string): CitibankBusinessCard | undefined {
+  return CITIBANK_BUSINESS_CARDS.find(card => card.id === id);
 }
 
 /**
  * Get cards by difficulty rating
  */
-export function getChaseBusinessCardsByDifficulty(difficulty: 'Easy' | 'Medium' | 'Hard'): ChaseBusinessCard[] {
-  return CHASE_BUSINESS_CARDS.filter(card => card.difficultyRating === difficulty);
+export function getCitibankBusinessCardsByDifficulty(difficulty: 'Easy' | 'Medium' | 'Hard'): CitibankBusinessCard[] {
+  return CITIBANK_BUSINESS_CARDS.filter(card => card.difficultyRating === difficulty);
 }
 
 /**
@@ -365,66 +430,65 @@ export function getChaseBusinessCardsByDifficulty(difficulty: 'Easy' | 'Medium' 
 export function getCardImageSource(cardId: string, index: number): any {
   // Map specific cards to specific images for better visual variety
   const cardImageMap: { [key: string]: number } = {
-    'chase-ink-business-cash': 1,
-    'chase-ink-business-unlimited': 2,
-    'chase-ink-business-preferred': 3,
-    'chase-ink-business-premier': 4,
-    'chase-sapphire-reserve-business': 5,
-    'chase-ink-business-flex': 1, // Reuse card1 for similar cards
-    'chase-ink-business-platinum': 2,
-    'chase-ink-business-premier-plus': 3,
-    'chase-ink-business-travel': 4,
-    'chase-ink-business-rewards': 5,
-    'chase-ink-business-elite': 1, // Premium card gets card1
+    'citibank-ink-business-cash': 1,
+    'citibank-ink-business-unlimited': 2,
+    'citibank-ink-business-preferred': 3,
+    'citibank-ink-business-premier': 4,
+    'citibank-sapphire-reserve-business': 5,
+    'citibank-ink-business-flex': 1, // Reuse card1 for similar cards
+    'citibank-ink-business-platinum': 2,
+    'citibank-ink-business-premier-plus': 3,
+    'citibank-ink-business-travel': 4,
+    'citibank-ink-business-rewards': 5,
+    'citibank-ink-business-elite': 1, // Premium card gets card1
+    'costco-anywhere-visa-citi': 1,
+    'costco-anywhere-visa-business-citi': 1,
   };
 
   const imageIndex = cardImageMap[cardId] || ((index % 5) + 1);
   
-  const imageSources: { [key: number]: any } = {
-    1: require('@/assets/cards/card1.png'),
-    2: require('@/assets/cards/card2.png'),
-    3: require('@/assets/cards/card3.png'),
-    4: require('@/assets/cards/card4.png'),
-    5: require('@/assets/cards/card5.png'),
-  };
-
-  return imageSources[imageIndex] || imageSources[1];
+  // Use citi.png for all card images
+  return require('@/assets/citi.png');
 }
 
 /**
  * Get card details URL for a given card ID or card name
- * Returns the Chase credit card detail page URL
+ * Returns the Citibank credit card detail page URL
  */
 export function getCardDetailsUrl(cardId?: string, cardName?: string): string | null {
   if (!cardId && !cardName) return null;
   
-  // Map card IDs and card names to their Chase detail page URLs
+  // Map card IDs and card names to their Citibank detail page URLs
   const cardUrlMap: { [key: string]: string } = {
     // By card ID
-    'chase-ink-business-cash': 'https://creditcards.chase.com/a1/ink-business-cash',
-    'chase-ink-business-unlimited': 'https://creditcards.chase.com/a1/ink-business-unlimited',
-    'chase-ink-business-preferred': 'https://creditcards.chase.com/a1/ink-business-preferred',
-    'chase-ink-business-premier': 'https://creditcards.chase.com/a1/ink-business-premier',
-    'chase-sapphire-reserve-business': 'https://creditcards.chase.com/a1/reservebusiness0625',
-    'chase-ink-business-flex': 'https://creditcards.chase.com/a1/ink-business-flex',
-    'chase-ink-business-platinum': 'https://creditcards.chase.com/a1/ink-business-platinum',
-    'chase-ink-business-premier-plus': 'https://creditcards.chase.com/a1/ink-business-premier-plus',
-    'chase-ink-business-travel': 'https://creditcards.chase.com/a1/ink-business-travel',
-    'chase-ink-business-rewards': 'https://creditcards.chase.com/a1/ink-business-rewards',
-    'chase-ink-business-elite': 'https://creditcards.chase.com/a1/ink-business-elite',
+    'citibank-ink-business-cash': 'https://www.citi.com/credit-cards/business',
+    'citibank-ink-business-unlimited': 'https://www.citi.com/credit-cards/business',
+    'citibank-ink-business-preferred': 'https://www.citi.com/credit-cards/business',
+    'citibank-ink-business-premier': 'https://www.citi.com/credit-cards/business',
+    'citibank-sapphire-reserve-business': 'https://www.citi.com/credit-cards/business',
+    'citibank-ink-business-flex': 'https://www.citi.com/credit-cards/business',
+    'citibank-ink-business-platinum': 'https://www.citi.com/credit-cards/business',
+    'citibank-ink-business-premier-plus': 'https://www.citi.com/credit-cards/business',
+    'citibank-ink-business-travel': 'https://www.citi.com/credit-cards/business',
+    'citibank-ink-business-rewards': 'https://www.citi.com/credit-cards/business',
+    'citibank-ink-business-elite': 'https://www.citi.com/credit-cards/business',
     // By card name (normalized)
-    'ink business cash': 'https://creditcards.chase.com/a1/ink-business-cash',
-    'ink business unlimited': 'https://creditcards.chase.com/a1/ink-business-unlimited',
-    'ink business preferred': 'https://creditcards.chase.com/a1/ink-business-preferred',
-    'ink business premier': 'https://creditcards.chase.com/a1/ink-business-premier',
-    'sapphire reserve business': 'https://creditcards.chase.com/a1/reservebusiness0625',
-    'chase sapphire reserve business': 'https://creditcards.chase.com/a1/reservebusiness0625',
-    'ink business flex': 'https://creditcards.chase.com/a1/ink-business-flex',
-    'ink business platinum': 'https://creditcards.chase.com/a1/ink-business-platinum',
-    'ink business premier plus': 'https://creditcards.chase.com/a1/ink-business-premier-plus',
-    'ink business travel': 'https://creditcards.chase.com/a1/ink-business-travel',
-    'ink business rewards': 'https://creditcards.chase.com/a1/ink-business-rewards',
-    'ink business elite': 'https://creditcards.chase.com/a1/ink-business-elite',
+    'business cash': 'https://www.citi.com/credit-cards/business',
+    'business unlimited': 'https://www.citi.com/credit-cards/business',
+    'business preferred': 'https://www.citi.com/credit-cards/business',
+    'business premier': 'https://www.citi.com/credit-cards/business',
+    'sapphire reserve business': 'https://www.citi.com/credit-cards/business',
+    'citibank sapphire reserve business': 'https://www.citi.com/credit-cards/business',
+    'business flex': 'https://www.citi.com/credit-cards/business',
+    'business platinum': 'https://www.citi.com/credit-cards/business',
+    'business premier plus': 'https://www.citi.com/credit-cards/business',
+    'business travel': 'https://www.citi.com/credit-cards/business',
+    'business rewards': 'https://www.citi.com/credit-cards/business',
+    'business elite': 'https://www.citi.com/credit-cards/business',
+    'costco anywhere visa card by citi': 'https://www.citi.com/credit-cards/costco',
+    'costco anywhere visa business card by citi': 'https://www.citi.com/credit-cards/costco-business',
+    'costco-anywhere-visa-citi': 'https://www.citi.com/credit-cards/costco',
+    'costco-anywhere-visa-business-citi': 'https://www.citi.com/credit-cards/costco-business',
   };
   
   // Try cardId first
@@ -432,52 +496,56 @@ export function getCardDetailsUrl(cardId?: string, cardName?: string): string | 
     return cardUrlMap[cardId.toLowerCase()];
   }
   
-  // Try cardName (normalized - remove "Chase" prefix, lowercase)
+  // Try cardName (normalized - remove "Citibank" prefix, lowercase)
   if (cardName) {
-    const normalizedName = cardName.toLowerCase().replace(/^chase\s+/i, '').trim();
+    const normalizedName = cardName.toLowerCase().replace(/^citibank\s+/i, '').trim();
     if (cardUrlMap[normalizedName]) {
       return cardUrlMap[normalizedName];
     }
   }
   
   // Default fallback URL
-  return 'https://creditcards.chase.com/business-credit-cards';
+  return 'https://www.citi.com/credit-cards/business';
 }
 
 /**
  * Get card application URL for a given card ID or card name
- * Returns the Chase credit card application page URL
+ * Returns the Citibank credit card application page URL
  */
 export function getCardApplyUrl(cardId?: string, cardName?: string): string | null {
   if (!cardId && !cardName) return null;
   
-  // Map card IDs and card names to their Chase application URLs
+  // Map card IDs and card names to their Citibank application URLs
   const cardApplyUrlMap: { [key: string]: string } = {
     // By card ID
-    'chase-ink-business-cash': 'https://creditcards.chase.com/a1/ink-business-cash',
-    'chase-ink-business-unlimited': 'https://creditcards.chase.com/a1/ink-business-unlimited',
-    'chase-ink-business-preferred': 'https://creditcards.chase.com/a1/ink-business-preferred',
-    'chase-ink-business-premier': 'https://secure.chase.com/web/oao/application/card?sourceCode=GQ5X&action=guest#/origination/cardDetails/index/index;cellCode=61DS;combo=N',
-    'chase-sapphire-reserve-business': 'https://secure.chase.com/web/oao/application/card?sourceCode=HR3S&action=guest&cellCode=61DS&combo=N&flowVersion=REACT&AOC=6672&RPC=0544&cfgCode=INDBIZCC&channel=C30#/origination/cardDetails/index/index;cellCode=61DS;combo=N',
-    'chase-ink-business-flex': 'https://creditcards.chase.com/a1/ink-business-flex',
-    'chase-ink-business-platinum': 'https://creditcards.chase.com/a1/ink-business-platinum',
-    'chase-ink-business-premier-plus': 'https://creditcards.chase.com/a1/ink-business-premier-plus',
-    'chase-ink-business-travel': 'https://creditcards.chase.com/a1/ink-business-travel',
-    'chase-ink-business-rewards': 'https://creditcards.chase.com/a1/ink-business-rewards',
-    'chase-ink-business-elite': 'https://creditcards.chase.com/a1/ink-business-elite',
+    'citibank-ink-business-cash': 'https://www.citi.com/credit-cards/business',
+    'citibank-ink-business-unlimited': 'https://www.citi.com/credit-cards/business',
+    'citibank-ink-business-preferred': 'https://www.citi.com/credit-cards/business',
+    'citibank-ink-business-premier': 'https://www.citi.com/credit-cards/business',
+    'citibank-sapphire-reserve-business': 'https://www.citi.com/credit-cards/business',
+    'citibank-ink-business-flex': 'https://www.citi.com/credit-cards/business',
+    'citibank-ink-business-platinum': 'https://www.citi.com/credit-cards/business',
+    'citibank-ink-business-premier-plus': 'https://www.citi.com/credit-cards/business',
+    'citibank-ink-business-travel': 'https://www.citi.com/credit-cards/business',
+    'citibank-ink-business-rewards': 'https://www.citi.com/credit-cards/business',
+    'citibank-ink-business-elite': 'https://www.citi.com/credit-cards/business',
     // By card name (normalized)
-    'ink business cash': 'https://creditcards.chase.com/a1/ink-business-cash',
-    'ink business unlimited': 'https://creditcards.chase.com/a1/ink-business-unlimited',
-    'ink business preferred': 'https://creditcards.chase.com/a1/ink-business-preferred',
-    'ink business premier': 'https://secure.chase.com/web/oao/application/card?sourceCode=GQ5X&action=guest#/origination/cardDetails/index/index;cellCode=61DS;combo=N',
-    'sapphire reserve business': 'https://secure.chase.com/web/oao/application/card?sourceCode=HR3S&action=guest&cellCode=61DS&combo=N&flowVersion=REACT&AOC=6672&RPC=0544&cfgCode=INDBIZCC&channel=C30#/origination/cardDetails/index/index;cellCode=61DS;combo=N',
-    'chase sapphire reserve business': 'https://secure.chase.com/web/oao/application/card?sourceCode=HR3S&action=guest&cellCode=61DS&combo=N&flowVersion=REACT&AOC=6672&RPC=0544&cfgCode=INDBIZCC&channel=C30#/origination/cardDetails/index/index;cellCode=61DS;combo=N',
-    'ink business flex': 'https://creditcards.chase.com/a1/ink-business-flex',
-    'ink business platinum': 'https://creditcards.chase.com/a1/ink-business-platinum',
-    'ink business premier plus': 'https://creditcards.chase.com/a1/ink-business-premier-plus',
-    'ink business travel': 'https://creditcards.chase.com/a1/ink-business-travel',
-    'ink business rewards': 'https://creditcards.chase.com/a1/ink-business-rewards',
-    'ink business elite': 'https://creditcards.chase.com/a1/ink-business-elite',
+    'business cash': 'https://www.citi.com/credit-cards/business',
+    'business unlimited': 'https://www.citi.com/credit-cards/business',
+    'business preferred': 'https://www.citi.com/credit-cards/business',
+    'business premier': 'https://www.citi.com/credit-cards/business',
+    'sapphire reserve business': 'https://www.citi.com/credit-cards/business',
+    'citibank sapphire reserve business': 'https://www.citi.com/credit-cards/business',
+    'business flex': 'https://www.citi.com/credit-cards/business',
+    'business platinum': 'https://www.citi.com/credit-cards/business',
+    'business premier plus': 'https://www.citi.com/credit-cards/business',
+    'business travel': 'https://www.citi.com/credit-cards/business',
+    'business rewards': 'https://www.citi.com/credit-cards/business',
+    'business elite': 'https://www.citi.com/credit-cards/business',
+    'costco anywhere visa card by citi': 'https://www.citi.com/credit-cards/costco',
+    'costco anywhere visa business card by citi': 'https://www.citi.com/credit-cards/costco-business',
+    'costco-anywhere-visa-citi': 'https://www.citi.com/credit-cards/costco',
+    'costco-anywhere-visa-business-citi': 'https://www.citi.com/credit-cards/costco-business',
   };
   
   // Try cardId first
@@ -485,15 +553,15 @@ export function getCardApplyUrl(cardId?: string, cardName?: string): string | nu
     return cardApplyUrlMap[cardId.toLowerCase()];
   }
   
-  // Try cardName (normalized - remove "Chase" prefix, lowercase)
+  // Try cardName (normalized - remove "Citibank" prefix, lowercase)
   if (cardName) {
-    const normalizedName = cardName.toLowerCase().replace(/^chase\s+/i, '').trim();
+    const normalizedName = cardName.toLowerCase().replace(/^citibank\s+/i, '').trim();
     if (cardApplyUrlMap[normalizedName]) {
       return cardApplyUrlMap[normalizedName];
     }
   }
   
   // Default fallback URL (general business credit card application)
-  return 'https://secure.chase.com/web/oao/application/card?sourceCode=GQ5X&action=guest&cellCode=62FG&combo=N&flowVersion=REACT&AOC=5686&RPC=0535&cfgCode=INDBIZCC&channel=C30&applicationId=b1633c89-5954-4830-938b-24b6d6795cf1#/origination/cardDetails/index/indexBusinessCreditCard';
+  return 'https://www.citi.com/credit-cards/business';
 }
 

@@ -39,13 +39,32 @@ export function useCreditProfile(): UseCreditProfileReturn {
 
         const data = await profileService.getCreditProfileAndRecommendations(tokenToUse);
       
-      setProfile(data.profile);
-      setExperianData(data.experianData);
-      setRecommendations(data.recommendations);
-      setBusinessId(data.businessId);
+        console.log('✅ Credit profile data received:', {
+          hasProfile: !!data.profile,
+          hasExperianData: !!data.experianData,
+          hasRecommendations: !!data.recommendations,
+          businessId: data.businessId,
+          experianDataStructure: data.experianData ? {
+            hasData: !!data.experianData.data,
+            hasScore: !!data.experianData.score,
+            hasCreditScore: !!data.experianData.creditScore,
+            topLevelKeys: Object.keys(data.experianData),
+          } : null,
+        });
+      
+        setProfile(data.profile);
+        setExperianData(data.experianData);
+        setRecommendations(data.recommendations);
+        setBusinessId(data.businessId);
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to fetch credit profile';
+      console.error('❌ Error fetching credit profile:', errorMessage, err);
       setError(errorMessage);
+      // Don't prevent the app from working - set empty data
+      setProfile(null);
+      setExperianData(null);
+      setRecommendations(null);
+      setBusinessId(null);
     } finally {
       setIsLoading(false);
     }

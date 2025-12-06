@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import * as internalAuthService from '@/services/internalAuthService';
 import { getUserProfile } from '@/services/profileService';
+import { mockUserProfile } from '@/data/mockBusinessData';
 
 const TOKEN_KEY = '@internal_auth_token';
 const USER_KEY = '@internal_auth_user';
@@ -279,8 +280,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(profile.data || null);
         await AsyncStorage.setItem(USER_KEY, JSON.stringify(profile.data || null));
         console.log('👤 Profile loaded for user:', profile.data?.email || email);
+        console.log('🏢 Business data:', profile.data?.business?.[0]?.name || 'No business data');
       } catch (profileError) {
-        console.warn('⚠️ Unable to fetch user profile after login:', profileError);
+        console.warn('⚠️ Unable to fetch user profile after login, using mock data:', profileError);
+        // Use mock data as fallback
+        setUser(mockUserProfile as any);
+        await AsyncStorage.setItem(USER_KEY, JSON.stringify(mockUserProfile));
       }
     } catch (error: any) {
       console.error('❌ Login failed:', error);

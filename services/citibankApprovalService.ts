@@ -1,6 +1,6 @@
 /**
- * Chase Business Credit Card Approval Likelihood Calculator
- * Implements comprehensive underwriting rules and scoring for all Chase business cards
+ * Citibank Business Credit Card Approval Likelihood Calculator
+ * Implements comprehensive underwriting rules and scoring for all Citibank business cards
  */
 
 export interface PersonalCreditData {
@@ -10,12 +10,12 @@ export interface PersonalCreditData {
   transUnionFico?: number;
   utilization?: number;
   recentHardInquiries90Days?: number;
-  pastChaseRelationship?: boolean;
-  chase524Count?: number;
-  chase230Count?: number;
-  chaseBusiness130Count?: number;
-  existingChaseCreditLimit?: number;
-  currentChaseUtilization?: number;
+  pastCitibankRelationship?: boolean;
+  citibank524Count?: number;
+  citibank230Count?: number;
+  citibankBusiness130Count?: number;
+  existingCitibankCreditLimit?: number;
+  currentCitibankUtilization?: number;
   bureauUnfrozen?: {
     experian?: boolean;
     equifax?: boolean;
@@ -34,7 +34,7 @@ export interface BusinessCreditData {
   kycPass?: boolean;
   naicsIndustryRiskTier?: 'Low' | 'Medium' | 'High';
   businessProfitability?: boolean;
-  depositRelationshipWithChase?: boolean;
+  depositRelationshipWithCitibank?: boolean;
   paymentBehavior?: {
     overdrafts?: number;
     nsf?: number;
@@ -49,7 +49,7 @@ export interface SpendProfile {
   advertisingSpendProfile?: 'Low' | 'Med' | 'High';
 }
 
-export interface ChaseCardProfile {
+export interface CitibankCardProfile {
   cardName: string;
   difficultyRating: 'Easy' | 'Medium' | 'Hard';
   minPersonalFico?: number;
@@ -129,23 +129,23 @@ function checkHardFailConditions(
   const reasons: string[] = [];
 
   // 5/24 Rule
-  if (personal.chase524Count !== undefined && personal.chase524Count >= 5) {
+  if (personal.citibank524Count !== undefined && personal.citibank524Count >= 5) {
     reasons.push('5/24 Rule: 5 or more new personal cards in last 24 months');
   }
 
   // 2/30 Rule
-  if (personal.chase230Count !== undefined && personal.chase230Count >= 2) {
-    reasons.push('2/30 Rule: 2 or more Chase cards approved in last 30 days');
+  if (personal.citibank230Count !== undefined && personal.citibank230Count >= 2) {
+    reasons.push('2/30 Rule: 2 or more Citibank cards approved in last 30 days');
   }
 
   // 1/30 Business Rule
-  if (personal.chaseBusiness130Count !== undefined && personal.chaseBusiness130Count >= 1) {
-    reasons.push('1/30 Business Rule: Chase business card approved in last 30 days');
+  if (personal.citibankBusiness130Count !== undefined && personal.citibankBusiness130Count >= 1) {
+    reasons.push('1/30 Business Rule: Citibank business card approved in last 30 days');
   }
 
   // Experian frozen
   if (personal.bureauUnfrozen?.experian === false) {
-    reasons.push('Experian bureau is frozen - must be unfrozen for Chase pull');
+    reasons.push('Experian bureau is frozen - must be unfrozen for Citibank pull');
   }
 
   // Business too new
@@ -179,7 +179,7 @@ function calculateLikelihoodScore(
   personal: PersonalCreditData,
   business: BusinessCreditData,
   spend: SpendProfile,
-  cardProfile?: ChaseCardProfile
+  cardProfile?: CitibankCardProfile
 ): number {
   let score = 0;
 
@@ -191,9 +191,9 @@ function calculateLikelihoodScore(
   const businessScore = calculateBusinessScore(business);
   score += businessScore * 0.20;
 
-  // Chase relationship/utilization (20%)
-  const chaseScore = calculateChaseRelationshipScore(personal);
-  score += chaseScore * 0.20;
+  // Citibank relationship/utilization (20%)
+  const citibankScore = calculateCitibankRelationshipScore(personal);
+  score += citibankScore * 0.20;
 
   // Cash flow & revenue (15%)
   const revenueScore = calculateRevenueScore(business);
@@ -229,8 +229,8 @@ function calculatePersonalScore(personal: PersonalCreditData): number {
     factors++;
   }
 
-  // Past Chase relationship
-  if (personal.pastChaseRelationship) {
+  // Past Citibank relationship
+  if (personal.pastCitibankRelationship) {
     score += 0.2; // Bonus for existing relationship
   }
 
@@ -271,28 +271,28 @@ function calculateBusinessScore(business: BusinessCreditData): number {
   }
 
   // Deposit relationship
-  if (business.depositRelationshipWithChase) {
+  if (business.depositRelationshipWithCitibank) {
     score += 0.1;
   }
 
   return Math.min(score, 1.0);
 }
 
-function calculateChaseRelationshipScore(personal: PersonalCreditData): number {
+function calculateCitibankRelationshipScore(personal: PersonalCreditData): number {
   let score = 0.5; // Base score
 
   // Existing relationship
-  if (personal.pastChaseRelationship) {
+  if (personal.pastCitibankRelationship) {
     score += 0.2;
   }
 
-  // Chase utilization (lower is better)
-  if (personal.currentChaseUtilization !== undefined) {
-    score += normalizeUtilization(personal.currentChaseUtilization) * 0.3;
+  // Citibank utilization (lower is better)
+  if (personal.currentCitibankUtilization !== undefined) {
+    score += normalizeUtilization(personal.currentCitibankUtilization) * 0.3;
   }
 
   // Exposure ratio (lower is better, but some exposure is good)
-  if (personal.existingChaseCreditLimit && personal.existingChaseCreditLimit > 0) {
+  if (personal.existingCitibankCreditLimit && personal.existingCitibankCreditLimit > 0) {
     score += 0.1; // Having some exposure is positive
   }
 
@@ -356,7 +356,7 @@ function calculateRiskScore(
 
 function calculateSpendFitScore(
   spend: SpendProfile,
-  cardProfile?: ChaseCardProfile
+  cardProfile?: CitibankCardProfile
 ): number {
   let score = 0.5; // Base score
 
@@ -401,12 +401,12 @@ function generateReasoning(
   const positiveFactors: string[] = [];
 
   // 5/24 status
-  if (personal.chase524Count !== undefined) {
-    if (personal.chase524Count < 5) {
-      positiveFactors.push(`Under 5/24 (${personal.chase524Count}/24)`);
-      reasoning.push(`Under 5/24 rule with ${personal.chase524Count} new cards in last 24 months`);
+  if (personal.citibank524Count !== undefined) {
+    if (personal.citibank524Count < 5) {
+      positiveFactors.push(`Under 5/24 (${personal.citibank524Count}/24)`);
+      reasoning.push(`Under 5/24 rule with ${personal.citibank524Count} new cards in last 24 months`);
     } else {
-      riskFactors.push(`At 5/24 limit (${personal.chase524Count}/24)`);
+      riskFactors.push(`At 5/24 limit (${personal.citibank524Count}/24)`);
     }
   }
 
@@ -450,10 +450,10 @@ function generateReasoning(
     }
   }
 
-  // Chase relationship
-  if (personal.pastChaseRelationship) {
-    positiveFactors.push('Existing Chase relationship');
-    reasoning.push('Strong existing relationship with Chase');
+  // Citibank relationship
+  if (personal.pastCitibankRelationship) {
+    positiveFactors.push('Existing Citibank relationship');
+    reasoning.push('Strong existing relationship with Citibank');
   }
 
   // Utilization
@@ -487,11 +487,11 @@ function generateReasoning(
 /**
  * Main function to calculate approval likelihood
  */
-export function calculateChaseApprovalLikelihood(
+export function calculateCitibankApprovalLikelihood(
   personal: PersonalCreditData,
   business: BusinessCreditData,
   spend: SpendProfile,
-  cardProfile?: ChaseCardProfile
+  cardProfile?: CitibankCardProfile
 ): ApprovalLikelihoodResult {
   // Stage 1: Check hard fail conditions
   const hardFail = checkHardFailConditions(personal, business);
@@ -500,7 +500,7 @@ export function calculateChaseApprovalLikelihood(
     return {
       recommendation: 'Declined by Rule',
       likelihoodScore: 0,
-      reasoning: ['Application would be declined due to Chase policy violations'],
+      reasoning: ['Application would be declined due to Citibank policy violations'],
       stage1Blocked: true,
       blockedReasons: hardFail.reasons,
       riskFactors: hardFail.reasons,
@@ -611,12 +611,12 @@ export function extractApprovalData(
       ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
       return date >= ninetyDaysAgo;
     }).length || 0,
-    pastChaseRelationship: false, // Would need to check from profile
-    chase524Count: 0, // Would need to track from profile
-    chase230Count: 0, // Would need to track from profile
-    chaseBusiness130Count: 0, // Would need to track from profile
-    existingChaseCreditLimit: 0, // Would need from profile
-    currentChaseUtilization: 0, // Would need from profile
+    pastCitibankRelationship: false, // Would need to check from profile
+    citibank524Count: 0, // Would need to track from profile
+    citibank230Count: 0, // Would need to track from profile
+    citibankBusiness130Count: 0, // Would need to track from profile
+    existingCitibankCreditLimit: 0, // Would need from profile
+    currentCitibankUtilization: 0, // Would need from profile
     bureauUnfrozen: {
       experian: true, // Default to true, would need to check
       equifax: true,
@@ -637,7 +637,7 @@ export function extractApprovalData(
     kycPass: true, // Default, would need to verify
     naicsIndustryRiskTier: 'Medium', // Default
     businessProfitability: null,
-    depositRelationshipWithChase: false,
+    depositRelationshipWithCitibank: false,
     paymentBehavior: {
       overdrafts: 0,
       nsf: 0,

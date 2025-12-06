@@ -11,6 +11,8 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { SidebarProvider } from '@/contexts/SidebarContext';
+import Drawer from '@/components/Drawer';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -94,8 +96,11 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <AuthProvider>
-          <RootLayoutNav />
-          <StatusBar style="auto" />
+          <SidebarProvider>
+            <RootLayoutNav />
+            <Drawer />
+            <StatusBar style="auto" />
+          </SidebarProvider>
         </AuthProvider>
       </ThemeProvider>
     </GestureHandlerRootView>

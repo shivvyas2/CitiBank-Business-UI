@@ -10,12 +10,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-// CLERK CODE COMMENTED OUT - Using internal API only
-// import { useSignIn } from '@clerk/clerk-expo';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -24,55 +21,30 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  // CLERK CODE COMMENTED OUT
-  // const { signIn, setActive, isLoaded } = useSignIn();
+  const [loginMethod, setLoginMethod] = useState<'tokens' | 'app'>('tokens');
   const { login } = useAuth();
   const router = useRouter();
 
   const handleLogin = async () => {
-    // CLERK CODE COMMENTED OUT
-    // if (!isLoaded) return;
-
     if (!email.trim() || !password.trim()) {
-      Alert.alert('Error', 'Please enter both email and password');
+      Alert.alert('Error', 'Please enter both Email and Password');
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      Alert.alert('Error', 'Please enter a valid email address');
       return;
     }
 
     setIsLoading(true);
     try {
-      // Using internal API login only
       await login(email.trim(), password);
       console.log('✅ Internal API login successful');
       router.replace('/(tabs)');
-      
-      // CLERK CODE COMMENTED OUT
-      // const result = await signIn.create({
-      //   identifier: email.trim(),
-      //   password,
-      // });
-      //
-      // if (result.status === 'complete') {
-      //   await setActive({ session: result.createdSessionId });
-      //   console.log('✅ Login successful!');
-      //   console.log('Session ID:', result.createdSessionId);
-      //   console.log('User ID:', result.createdUserId);
-      //   // Token will be logged automatically in AuthContext useEffect when session is set
-      //
-      //   try {
-      //     await loginInternal(email.trim(), password);
-      //   } catch (internalError: any) {
-      //     console.error('⚠️ Internal login failed after Clerk sign-in:', internalError);
-      //     Alert.alert('Warning', 'Signed in with Clerk but failed to connect to internal services. Some features may not work.');
-      //   }
-      //   
-      //   router.replace('/(tabs)');
-      // } else {
-      //   Alert.alert('Error', 'Sign in incomplete. Please try again.');
-      // }
     } catch (error: any) {
       Alert.alert('Login Failed', error.message || 'An error occurred during login');
-      // CLERK CODE COMMENTED OUT
-      // Alert.alert('Login Failed', error.errors?.[0]?.message || 'An error occurred during login');
     } finally {
       setIsLoading(false);
     }
@@ -86,39 +58,74 @@ export default function LoginScreen() {
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled">
-          <View style={styles.header}>
-            <View style={styles.logoContainer}>
-              <Image
-                source={require('@/assets/chase-logo-transparent.png')}
-                style={styles.chaseLogo}
-                resizeMode="contain"
-              />
+          
+
+          {/* FDIC Information */}
+          <View style={styles.fdicContainer}>
+            <View style={styles.fdicRow}>
+              <Text style={styles.fdicText}>FDIC</Text>
+              <Text style={styles.fdicDescription}>
+                FDIC-Insured - Backed by the full faith and credit of the U.S. Government
+              </Text>
             </View>
-            <Text style={styles.title}>Welcome Back</Text>
-            <Text style={styles.subtitle}>Sign in to your account</Text>
+            <Text style={styles.citibankName}>Citibank, N.A.</Text>
           </View>
 
-          <View style={styles.form}>
+          {/* Welcome Section */}
+          <View style={styles.welcomeSection}>
+            <Text style={styles.welcomeText}>Welcome to</Text>
+            <Text style={styles.appTitle}>CitiBusiness® Online Mobile</Text>
+            <Text style={styles.appDescription}>
+              Access to Mobile Tokens & CitiBusiness Mobile Banking App
+            </Text>
+          </View>
+
+          {/* Login Method Selection */}
+          <View style={styles.loginMethodContainer}>
+            <TouchableOpacity
+              style={[styles.methodButton, loginMethod === 'tokens' && styles.methodButtonActive]}
+              onPress={() => setLoginMethod('tokens')}>
+              <Text style={[styles.methodButtonText, loginMethod === 'tokens' && styles.methodButtonTextActive]}>
+                Mobile Tokens
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.methodButton, loginMethod === 'app' && styles.methodButtonActive]}
+              onPress={() => setLoginMethod('app')}>
+              <Text style={[styles.methodButtonText, loginMethod === 'app' && styles.methodButtonTextActive]}>
+                Mobile App
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Login Form */}
+          <View style={styles.formCard}>
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter your email"
-                placeholderTextColor="#999"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                editable={!isLoading}
-              />
+              <Text style={styles.label}>
+                <Text style={styles.asterisk}>*</Text> Email
+              </Text>
+              <View style={styles.inputWrapper}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your email"
+                  placeholderTextColor="#999"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  editable={!isLoading}
+                />
+              </View>
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Password</Text>
-              <View style={styles.passwordContainer}>
+              <Text style={styles.label}>
+                <Text style={styles.asterisk}>*</Text> Password
+              </Text>
+              <View style={styles.inputWrapper}>
                 <TextInput
-                  style={styles.passwordInput}
+                  style={styles.input}
                   placeholder="Enter your password"
                   placeholderTextColor="#999"
                   value={password}
@@ -133,12 +140,16 @@ export default function LoginScreen() {
                   style={styles.eyeIcon}>
                   <IconSymbol
                     name={showPassword ? 'eye.slash' : 'eye'}
-                    size={20}
+                    size={18}
                     color="#666"
                   />
                 </TouchableOpacity>
               </View>
             </View>
+
+            <TouchableOpacity style={styles.forgotPasswordLink}>
+              <Text style={styles.forgotPasswordText}>Forgot Password</Text>
+            </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
@@ -147,16 +158,13 @@ export default function LoginScreen() {
               {isLoading ? (
                 <ActivityIndicator color="white" />
               ) : (
-                <Text style={styles.loginButtonText}>Sign In</Text>
+                <Text style={styles.loginButtonText}>Log In</Text>
               )}
             </TouchableOpacity>
 
-            <View style={styles.signupContainer}>
-              <Text style={styles.signupText}>Don't have an account? </Text>
-              <TouchableOpacity onPress={() => router.push('/signup')} disabled={isLoading}>
-                <Text style={styles.signupLink}>Sign Up</Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity style={styles.switchAccountsLink}>
+              <Text style={styles.switchAccountsText}>Switch Accounts</Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -174,33 +182,98 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingTop: 40,
     paddingBottom: 24,
+    paddingTop: 40,
   },
-  header: {
-    alignItems: 'center',
-    marginBottom: 40,
+  fdicContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
   },
-  logoContainer: {
-    marginBottom: 24,
+  fdicRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 8,
   },
-  chaseLogo: {
-    width: 200,
-    height: 80,
+  fdicText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0066CC',
+    marginRight: 8,
+    minWidth: 40,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
+  fdicDescription: {
+    flex: 1,
+    fontSize: 12,
+    color: '#666',
+    lineHeight: 18,
+  },
+  citibankName: {
+    fontSize: 14,
+    color: '#000',
+    fontWeight: '500',
+    marginTop: 4,
+  },
+  welcomeSection: {
+    paddingHorizontal: 16,
+    paddingTop: 24,
+    paddingBottom: 16,
+  },
+  welcomeText: {
+    fontSize: 16,
+    color: '#000',
+    marginBottom: 4,
+  },
+  appTitle: {
+    fontSize: 24,
+    fontWeight: '700',
     color: '#000',
     marginBottom: 8,
   },
-  subtitle: {
-    fontSize: 16,
+  appDescription: {
+    fontSize: 14,
     color: '#666',
+    lineHeight: 20,
   },
-  form: {
+  loginMethodContainer: {
+    flexDirection: 'row',
+    marginHorizontal: 16,
+    marginBottom: 16,
+    backgroundColor: '#F0F0F0',
+    borderRadius: 8,
+    padding: 4,
+  },
+  methodButton: {
     flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  methodButtonActive: {
+    backgroundColor: '#0066CC',
+  },
+  methodButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#0066CC',
+  },
+  methodButtonTextActive: {
+    color: 'white',
+  },
+  formCard: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 20,
+    marginHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   inputContainer: {
     marginBottom: 20,
@@ -208,52 +281,46 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#000',
+    color: '#0066CC',
     marginBottom: 8,
   },
-  input: {
-    backgroundColor: '#F8F9FA',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: '#000',
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
+  asterisk: {
+    color: '#FF3B30',
   },
-  passwordContainer: {
+  inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8F9FA',
-    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E5E5E5',
+    borderRadius: 8,
+    backgroundColor: '#FAFAFA',
   },
-  passwordInput: {
+  input: {
     flex: 1,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 12,
     fontSize: 16,
     color: '#000',
   },
   eyeIcon: {
-    padding: 14,
+    padding: 12,
+  },
+  forgotPasswordLink: {
+    alignSelf: 'flex-end',
+    marginBottom: 20,
+  },
+  forgotPasswordText: {
+    fontSize: 14,
+    color: '#0066CC',
+    fontWeight: '500',
   },
   loginButton: {
     backgroundColor: '#0066CC',
-    borderRadius: 12,
+    borderRadius: 8,
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8,
-    shadowColor: '#0066CC',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    marginBottom: 16,
   },
   loginButtonDisabled: {
     opacity: 0.6,
@@ -263,18 +330,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
   },
-  signupContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 24,
+  switchAccountsLink: {
+    alignSelf: 'center',
   },
-  signupText: {
-    fontSize: 14,
-    color: '#666',
-  },
-  signupLink: {
+  switchAccountsText: {
     fontSize: 14,
     color: '#0066CC',
-    fontWeight: '600',
+    fontWeight: '500',
   },
 });

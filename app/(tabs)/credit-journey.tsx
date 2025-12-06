@@ -1,12 +1,12 @@
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useAuth } from '@/contexts/AuthContext';
-import { getAllChaseBusinessCards, getCardApplyUrl, getCardDetailsUrl, getCardImageSource, type ChaseBusinessCard } from '@/data/chaseBusinessCards';
+import { getAllCitibankBusinessCards, getCardApplyUrl, getCardDetailsUrl, getCardImageSource, type CitibankBusinessCard } from '@/data/citibankBusinessCards';
 import { useCreditProfile } from '@/hooks/useCreditProfile';
 import {
-    calculateChaseApprovalLikelihood,
+    calculateCitibankApprovalLikelihood,
     extractApprovalData,
-    type ChaseCardProfile
-} from '@/services/chaseApprovalService';
+    type CitibankCardProfile
+} from '@/services/citibankApprovalService';
 import { trackCardApplication } from '@/services/profileService';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -158,8 +158,8 @@ export default function CreditJourneyScreen() {
   };
 
   const handleApplyNow = async (cardId?: string, applyUrl?: string) => {
-    // Default Chase application URL if no specific URL provided
-    const defaultUrl = 'https://secure.chase.com/web/oao/application/card?sourceCode=GQ5X&action=guest&cellCode=62FG&combo=N&flowVersion=REACT&AOC=5686&RPC=0535&cfgCode=INDBIZCC&channel=C30&applicationId=b1633c89-5954-4830-938b-24b6d6795cf1#/origination/cardDetails/index/indexBusinessCreditCard';
+    // Default Citibank application URL if no specific URL provided
+    const defaultUrl = 'https://www.citi.com/credit-cards/business';
     const url = applyUrl || defaultUrl;
     
     // Track the application for API recommendations (UUID cardIds)
@@ -197,9 +197,29 @@ export default function CreditJourneyScreen() {
 
   // Properly destructure all Experian data
   const experianDataDestructured = useMemo(() => {
-    if (!experianData?.data) return null;
+    // Log the raw experianData to debug
+    console.log('🔍 Raw experianData:', {
+      hasExperianData: !!experianData,
+      hasData: !!experianData?.data,
+      topLevelScore: experianData?.score,
+      topLevelCreditScore: experianData?.creditScore,
+      dataKeys: experianData?.data ? Object.keys(experianData.data) : [],
+      scoreInformation: experianData?.data?.scoreInformation,
+    });
+    
+    if (!experianData?.data) {
+      console.warn('⚠️ No experianData.data found');
+      return null;
+    }
     
     const data = experianData.data;
+    
+    console.log('📊 Extracting score information:', {
+      hasScoreInformation: !!data.scoreInformation,
+      commercialScore: data.scoreInformation?.commercialScore,
+      fsrScore: data.scoreInformation?.fsrScore,
+      allScoreInfoKeys: data.scoreInformation ? Object.keys(data.scoreInformation) : [],
+    });
     
     return {
       // Score Information
@@ -282,7 +302,21 @@ export default function CreditJourneyScreen() {
   // Personal credit score data (FICO/VantageScore 3.0 - 300-850 range)
   const personalScoreData = useMemo(() => {
     // Try to get personal credit score from experianData
-    const personalScore = experianData?.creditScore || experianData?.score || null;
+    // Check multiple possible locations in the response
+    const personalScore = 
+      experianData?.creditScore || 
+      experianData?.score || 
+      experianData?.data?.creditScore ||
+      experianData?.data?.score ||
+      null;
+    
+    console.log('🔍 Personal Score Extraction:', {
+      experianDataCreditScore: experianData?.creditScore,
+      experianDataScore: experianData?.score,
+      dataCreditScore: experianData?.data?.creditScore,
+      dataScore: experianData?.data?.score,
+      finalPersonalScore: personalScore,
+    });
     
     // If we have a score in the 300-850 range, use it
     if (personalScore && personalScore >= 300 && personalScore <= 850) {
@@ -313,6 +347,18 @@ export default function CreditJourneyScreen() {
       const scoreInfo = experianDataDestructured.scoreInformation;
       const creditSummary = experianDataDestructured.expandedCreditSummary;
       
+      const fsrScore = scoreInfo.fsrScore?.score;
+      const commercialScore = scoreInfo.commercialScore?.score;
+      const finalScore = fsrScore || commercialScore || 35;
+      
+      console.log('🔍 Business Score Extraction:', {
+        hasScoreInfo: !!scoreInfo,
+        fsrScore,
+        commercialScore,
+        finalScore,
+        scoreInfoKeys: scoreInfo ? Object.keys(scoreInfo) : [],
+      });
+      
       return {
         utilizationPercent: creditSummary.currentAccountBalance && creditSummary.allTradelineBalance
           ? Math.round((creditSummary.currentAccountBalance / creditSummary.allTradelineBalance) * 100)
@@ -327,7 +373,7 @@ export default function CreditJourneyScreen() {
           thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
           return date >= thirtyDaysAgo;
         }).length || 2,
-        score: scoreInfo.fsrScore?.score || scoreInfo.commercialScore?.score || 35,
+        score: finalScore,
         businessId: businessId,
       };
     }
@@ -454,7 +500,7 @@ export default function CreditJourneyScreen() {
       dbtDistribution: [
         { name: '0-30 days', population: 15000, color: '#34C759' },
         { name: '31-60 days', population: 0, color: '#FF9500' },
-        { name: '61-90 days', population: 0, color: '#FF4444' },
+        { name: '61-90 days', population: 0, color: '#E31837' },
         { name: '90+ days', population: 0, color: '#8E8E93' },
       ],
     };
@@ -664,16 +710,16 @@ export default function CreditJourneyScreen() {
 
   const CreditScoreGauge = ({ score = 35, category = 'Moderate Risk', change = 5, scoreType = 'FSR Score', provider = 'Experian', maxScore = 100, changeDirection = 'up' as 'up' | 'down' }) => {
     const getRiskCategoryColor = (cat: string): string => {
-      // Personal score colors (300-850 range)
+      // Personal score colors (300-850 range) - Using Citibank colors
       if (maxScore === 850) {
         if (cat.includes('Excellent') || cat.includes('Good')) return '#34C759';
         if (cat.includes('Fair')) return '#FF9500';
-        return '#FF4444'; // Poor or Very Poor
+        return '#E31837'; // Poor or Very Poor - Citibank red
       }
-      // Business score colors (0-100 range)
+      // Business score colors (0-100 range) - Using Citibank colors
       if (cat.includes('Minimal') || cat.includes('Low')) return '#34C759';
       if (cat.includes('Moderate')) return '#FF9500';
-      return '#FF4444';
+      return '#E31837'; // Citibank red
     };
 
     return (
@@ -719,9 +765,9 @@ export default function CreditJourneyScreen() {
             <IconSymbol 
               name={changeDirection === 'down' ? "arrow.down" : "arrow.up"} 
               size={20} 
-              color={changeDirection === 'down' ? "#FF4444" : "#34C759"} 
+              color={changeDirection === 'down' ? "#E31837" : "#34C759"} 
             />
-            <Text style={[styles.scoreChangeText, changeDirection === 'down' && { color: '#FF4444' }]}>
+            <Text style={[styles.scoreChangeText, changeDirection === 'down' && { color: '#E31837' }]}>
               {changeDirection === 'down' ? '-' : '+'}{Math.abs(change)} points
             </Text>
         </View>
@@ -743,12 +789,12 @@ export default function CreditJourneyScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#1A237E" />
+      <StatusBar barStyle="light-content" backgroundColor="#0066CC" />
       
       {/* Header */}
       <View style={styles.header}>
         
-        <Text style={styles.headerTitle}>Lumiq Credit Journey</Text>
+        <Text style={styles.headerTitle}>Credit Journey</Text>
         
         <View style={styles.headerRight}>
           <TouchableOpacity style={styles.notificationButton}>
@@ -1041,14 +1087,14 @@ export default function CreditJourneyScreen() {
                   <>
                   
                   <View style={styles.utilizationMainRow}>
-                    <Text style={[styles.utilizationPercentage, { color: utilizationData.overallUtilization > 80 ? '#FF4444' : utilizationData.overallUtilization > 30 ? '#FF9500' : '#34C759' }]}>
+                    <Text style={[styles.utilizationPercentage, { color: utilizationData.overallUtilization > 80 ? '#E31837' : utilizationData.overallUtilization > 30 ? '#FF9500' : '#0066CC' }]}>
                       {utilizationData.overallUtilization}%
                     </Text>
                     <View style={styles.utilizationBarContainer}>
                       <View style={styles.usageBar}>
                         <View style={[styles.usageBarFill, { 
                           width: `${Math.min(utilizationData.overallUtilization, 100)}%`,
-                          backgroundColor: utilizationData.overallUtilization > 80 ? '#FF4444' : utilizationData.overallUtilization > 30 ? '#FF9500' : '#34C759'
+                          backgroundColor: '#0066CC'
                         }]} />
                       </View>
                       <Text style={styles.utilizationRecommendationText}>
@@ -1083,7 +1129,7 @@ export default function CreditJourneyScreen() {
                               ${account.balance.toLocaleString()} / ${account.limit.toLocaleString()}
                             </Text>
                           </View>
-                          <Text style={[styles.accountUtilizationText, { color: account.utilization > 80 ? '#FF4444' : account.utilization > 30 ? '#FF9500' : '#34C759' }]}>
+                          <Text style={[styles.accountUtilizationText, { color: '#0066CC' }]}>
                             {account.utilization}%
                           </Text>
                         </View>
@@ -1228,7 +1274,7 @@ export default function CreditJourneyScreen() {
                       <IconSymbol 
                         name="exclamationmark.triangle.fill" 
                         size={24} 
-                        color={riskHighlightsData.collectionAccounts.count > 0 ? '#FF4444' : '#34C759'} 
+                        color={riskHighlightsData.collectionAccounts.count > 0 ? '#E31837' : '#34C759'} 
                       />
                       <Text style={styles.keyFactorName}>Collections</Text>
                       <Text style={styles.keyFactorValue}>
@@ -1246,7 +1292,7 @@ export default function CreditJourneyScreen() {
                       <IconSymbol 
                         name="clock.fill" 
                         size={24} 
-                        color={riskHighlightsData.severelyPastDueAccounts.count > 0 ? '#FF4444' : '#34C759'} 
+                        color={riskHighlightsData.severelyPastDueAccounts.count > 0 ? '#E31837' : '#34C759'} 
                       />
                       <Text style={styles.keyFactorName}>91+ Days Past Due</Text>
                       <Text style={styles.keyFactorValue}>
@@ -1279,7 +1325,7 @@ export default function CreditJourneyScreen() {
                       <IconSymbol name="chart.bar.fill" size={24} color="#0066CC" />
                       <Text style={styles.keyFactorName}>Industry Risk</Text>
                       <Text style={styles.keyFactorValue}>{businessInsights.industryRisk}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: businessInsights.industryRisk === 'High' ? '#FF4444' : businessInsights.industryRisk === 'Low' ? '#34C759' : '#FF9500' }]}>
+                      <View style={[styles.statusBadge, { backgroundColor: businessInsights.industryRisk === 'High' ? '#E31837' : businessInsights.industryRisk === 'Low' ? '#34C759' : '#FF9500' }]}>
                         <Text style={styles.statusBadgeText}>{businessInsights.industryRisk}</Text>
                       </View>
                     </View>
@@ -1385,12 +1431,7 @@ export default function CreditJourneyScreen() {
                                 {
                                   width: `${Math.min(progressPercentage, 100)}%`,
                                   opacity: hasLimit ? 1 : 0.2,
-                                  backgroundColor:
-                                    progressPercentage > 70
-                                      ? '#FF4444'
-                                      : progressPercentage > 30
-                                        ? '#FF9500'
-                                        : '#34C759',
+                                  backgroundColor: '#0066CC',
                                 },
                               ]}
                             />
@@ -1811,7 +1852,7 @@ export default function CreditJourneyScreen() {
                 ? 'Loading recommendations...' 
                 : recommendations?.recommendations?.length 
                   ? `You have ${recommendations.recommendations.length} personalized recommendations`
-                  : 'You are qualified for Chase Business cards'}
+                  : 'You are qualified for Citibank Business cards'}
             </Text>
             {!isLoading && error && (
               <TouchableOpacity onPress={refresh} style={styles.retryButton}>
@@ -1836,9 +1877,13 @@ export default function CreditJourneyScreen() {
             <>
               {/* AI Recommendation Summary - Compact */}
               {(() => {
-                const allChaseCards = getAllChaseBusinessCards();
+                // Filter to show only Costco cards by default
+                const allCitibankCards = getAllCitibankBusinessCards().filter(card => 
+                  card.id === 'costco-anywhere-visa-citi' || 
+                  card.id === 'costco-anywhere-visa-business-citi'
+                );
                 const apiRecommendations = recommendations?.recommendations || [];
-                const totalCards = apiRecommendations.length + allChaseCards.length;
+                const totalCards = apiRecommendations.length + allCitibankCards.length;
                 
                 return totalCards > 0 && (
                 <View style={styles.aiSummaryCard}>
@@ -1847,8 +1892,8 @@ export default function CreditJourneyScreen() {
                       <IconSymbol name="sparkles" size={20} color="#0066CC" />
                       <Text style={styles.aiSummaryTitle}>
                           {apiRecommendations.length > 0 
-                            ? `${apiRecommendations.length} Personalized + ${allChaseCards.length} Available Cards`
-                            : `${allChaseCards.length} Chase Business Cards Available`}
+                            ? `${apiRecommendations.length} Personalized + ${allCitibankCards.length} Available Cards`
+                            : `${allCitibankCards.length} Citibank Business Cards Available`}
                       </Text>
                     </View>
                       {recommendations?.score && (
@@ -1861,10 +1906,13 @@ export default function CreditJourneyScreen() {
                 );
               })()}
 
-              {/* Combine API recommendations with all Chase business cards */}
+              {/* Combine API recommendations with all Citibank business cards */}
               {(() => {
-                // Get all Chase business cards
-                const allChaseCards = getAllChaseBusinessCards();
+                // Get all Citibank business cards - filter to show only Costco cards by default
+                const allCitibankCards = getAllCitibankBusinessCards().filter(card => 
+                  card.id === 'costco-anywhere-visa-citi' || 
+                  card.id === 'costco-anywhere-visa-business-citi'
+                );
                 
                 // Merge API recommendations with all cards
                 const apiRecommendations = recommendations?.recommendations || [];
@@ -1872,19 +1920,19 @@ export default function CreditJourneyScreen() {
                 const apiCardIds = new Set(apiRecommendations.map((r: any) => r.cardId || r.id));
                 
                 // Helper function to match API recommendation cardName with static card
-                const matchCardByName = (cardName: string): ChaseBusinessCard | undefined => {
+                const matchCardByName = (cardName: string): CitibankBusinessCard | undefined => {
                   if (!cardName) return undefined;
-                  // Normalize card names by removing "Chase" prefix and extra spaces
+                  // Normalize card names by removing "Citibank" prefix and extra spaces
                   const normalizeName = (name: string): string => {
                     return name.toLowerCase()
-                      .replace(/^chase\s+/i, '') // Remove "Chase" prefix
+                      .replace(/^citibank\s+/i, '') // Remove "Citibank" prefix
                       .trim()
                       .replace(/\s+/g, ' '); // Normalize spaces
                   };
                   
                   const normalizedApiName = normalizeName(cardName);
                   
-                  return allChaseCards.find(card => {
+                  return allCitibankCards.find(card => {
                     const normalizedCardName = normalizeName(card.cardName);
                     // Check for exact match after normalization
                     return normalizedCardName === normalizedApiName;
@@ -1912,13 +1960,16 @@ export default function CreditJourneyScreen() {
                   return rec;
                 });
                 
-                // Add all Chase business cards that aren't already in recommendations
+                // Add all Citibank business cards that aren't already in recommendations
                 // Also check by cardName to avoid duplicates when API recommendations are enriched with static card data
                 const enrichedCardNames = new Set(
                   enrichedRecommendations.map((r: any) => r.cardName?.toLowerCase().trim())
                 );
-                const mergedCards: (ChaseBusinessCard | any)[] = [...enrichedRecommendations];
-                allChaseCards.forEach(card => {
+                const mergedCards: (CitibankBusinessCard | any)[] = [...enrichedRecommendations];
+                console.log('📋 All Citibank cards count:', allCitibankCards.length);
+                console.log('📋 All Citibank card IDs:', allCitibankCards.map(c => c.id));
+                
+                allCitibankCards.forEach(card => {
                   // Check if card is already in API recommendations by comparing:
                   // 1. cardId/id match
                   // 2. cardName match (to catch enriched recommendations)
@@ -1931,15 +1982,20 @@ export default function CreditJourneyScreen() {
                   
                   if (!isDuplicate) {
                     mergedCards.push(card);
+                    console.log('✅ Added card to mergedCards:', card.cardName, 'ID:', card.id);
+                  } else {
+                    console.log('⚠️ Skipped duplicate card:', card.cardName, 'ID:', card.id);
                   }
                 });
+                
+                console.log('📋 Total merged cards:', mergedCards.length);
                 
                 // Extract approval data once for all cards
                 const approvalData = extractApprovalData(profile, experianData, recommendations);
                 
                 // Calculate approval scores for all cards and sort by score (highest first)
                 const cardsWithScores = mergedCards.map((rec: any) => {
-                  const cardProfile: ChaseCardProfile = {
+                  const cardProfile: CitibankCardProfile = {
                     cardName: rec.cardName || rec.name || 'Business Credit Card',
                     difficultyRating: rec.difficultyRating || 'Medium',
                     minPersonalFico: rec.minPersonalFico || 680,
@@ -1951,7 +2007,7 @@ export default function CreditJourneyScreen() {
                     underwriterToleranceLevel: rec.underwriterToleranceLevel || 'Medium',
                   };
                   
-                  const approvalResult = calculateChaseApprovalLikelihood(
+                  const approvalResult = calculateCitibankApprovalLikelihood(
                     approvalData.personal,
                     approvalData.business,
                     approvalData.spend,
@@ -1969,6 +2025,9 @@ export default function CreditJourneyScreen() {
                 const apiCards: any[] = [];
                 const staticCards: any[] = [];
                 
+                console.log('📊 Total cards with scores:', cardsWithScores.length);
+                console.log('📊 Card IDs:', cardsWithScores.map((c: any) => c.id || c.cardId));
+                
                 cardsWithScores.forEach((card: any) => {
                   // Check if it's an API recommendation (UUID cardId)
                   const isApiRecommendation = card.cardId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(card.cardId);
@@ -1976,11 +2035,19 @@ export default function CreditJourneyScreen() {
                     apiCards.push(card);
                   } else {
                     // For static cards, filter out "Declined by Rule"
-                    if (card.approvalResult?.recommendation !== 'Declined by Rule') {
+                    // Always include Costco cards
+                    const isCostcoCard = card.id === 'costco-anywhere-visa-citi' || card.id === 'costco-anywhere-visa-business-citi';
+                    if (isCostcoCard || card.approvalResult?.recommendation !== 'Declined by Rule') {
                       staticCards.push(card);
+                      console.log('✅ Added static card:', card.cardName || card.name, 'ID:', card.id);
+                    } else {
+                      console.log('❌ Filtered out card:', card.cardName || card.name, 'Reason:', card.approvalResult?.recommendation);
                     }
                   }
                 });
+                
+                console.log('📊 API cards:', apiCards.length);
+                console.log('📊 Static cards:', staticCards.length);
                 
                 // Sort API recommendations by fitScore (descending), then by approval score
                 apiCards.sort((a, b) => {
@@ -2003,7 +2070,22 @@ export default function CreditJourneyScreen() {
                 });
                 
                 // Combine: API recommendations first, then static cards
-                const filteredCards = [...apiCards, ...staticCards];
+                // Ensure Costco cards are always included
+                const costcoCards = cardsWithScores.filter((card: any) => 
+                  card.id === 'costco-anywhere-visa-citi' || 
+                  card.id === 'costco-anywhere-visa-business-citi'
+                );
+                
+                // Remove Costco cards from staticCards if they're already there, then add them at the end
+                const staticCardsWithoutCostco = staticCards.filter((card: any) => 
+                  card.id !== 'costco-anywhere-visa-citi' && 
+                  card.id !== 'costco-anywhere-visa-business-citi'
+                );
+                
+                const filteredCards = [...apiCards, ...staticCardsWithoutCostco, ...costcoCards];
+                
+                console.log('📊 Final filtered cards count:', filteredCards.length);
+                console.log('📊 Final card names:', filteredCards.map((c: any) => c.cardName || c.name));
                 
                 return filteredCards.length > 0 ? (
                   filteredCards.map((rec: any, index: number) => {
@@ -2026,14 +2108,16 @@ export default function CreditJourneyScreen() {
                     )}
                     
                     <View style={{flexDirection: 'row', alignItems: 'flex-start'}}>
-                      {rec.cardImage ? (
-                        <Image source={{ uri: rec.cardImage }} style={styles.cardImage} />
-                      ) : (
-                        <Image
-                          source={getCardImageSource(rec.id || '', index)}
-                          style={styles.cardImage}
-                        />
-                      )}
+                      <Image
+                        source={
+                          rec.cardImage && typeof rec.cardImage === 'object' 
+                            ? rec.cardImage 
+                            : rec.cardImage && typeof rec.cardImage === 'string' && rec.cardImage.startsWith('http')
+                            ? { uri: rec.cardImage }
+                            : getCardImageSource(rec.id || rec.cardId || '', index)
+                        }
+                        style={styles.cardImage}
+                      />
                       <View style={{flex: 1}}>
                         <View style={styles.businessCardHeader}>
                           {(rec.fitScore || displayFitScore) && (
@@ -2043,7 +2127,7 @@ export default function CreditJourneyScreen() {
                           )}
                         </View>
                         <Text style={styles.businessCardTitle}>{rec.cardName || rec.name || 'Business Credit Card'}</Text>
-                        <Text style={styles.businessCardSubtitle}>Chase Business Credit Card</Text>
+                        <Text style={styles.businessCardSubtitle}>Citibank Business Credit Card</Text>
                       </View>
                     </View>
                     
@@ -2058,7 +2142,7 @@ export default function CreditJourneyScreen() {
                           styles.approvalScoreBadge,
                           approvalResult.likelihoodScore >= 75 && { backgroundColor: '#34C759' },
                           approvalResult.likelihoodScore >= 55 && approvalResult.likelihoodScore < 75 && { backgroundColor: '#FF9500' },
-                          approvalResult.likelihoodScore < 55 && { backgroundColor: '#FF4444' },
+                          approvalResult.likelihoodScore < 55 && { backgroundColor: '#E31837' },
                         ]}>
                           <Text style={styles.approvalScoreValue}>{approvalResult.likelihoodScore}/100</Text>
                         </View>
@@ -2068,7 +2152,7 @@ export default function CreditJourneyScreen() {
                           styles.approvalRecommendationText,
                           approvalResult.recommendation === 'Strongly Recommended' && { color: '#34C759' },
                           approvalResult.recommendation === 'Viable with Conditions' && { color: '#FF9500' },
-                          approvalResult.recommendation === 'Not Recommended' && { color: '#FF4444' },
+                          approvalResult.recommendation === 'Not Recommended' && { color: '#E31837' },
                         ]}>
                           {approvalResult.recommendation}
                         </Text>
@@ -2099,7 +2183,7 @@ export default function CreditJourneyScreen() {
                         <Text style={styles.factorsTitle}>Risk Factors</Text>
                         {approvalResult.riskFactors.slice(0, 3).map((factor, idx) => (
                           <View key={idx} style={styles.factorItem}>
-                            <IconSymbol name="exclamationmark.triangle.fill" size={14} color="#FF4444" />
+                            <IconSymbol name="exclamationmark.triangle.fill" size={14} color="#E31837" />
                             <Text style={styles.factorText}>{factor}</Text>
                           </View>
                         ))}
@@ -2242,7 +2326,7 @@ export default function CreditJourneyScreen() {
               })()}
               
               {/* Show message if no cards available at all */}
-              {!isLoading && !error && (!recommendations?.recommendations || recommendations.recommendations.length === 0) && getAllChaseBusinessCards().length === 0 && (
+              {!isLoading && !error && (!recommendations?.recommendations || recommendations.recommendations.length === 0) && getAllCitibankBusinessCards().length === 0 && (
                 <View style={styles.noRecommendationsContainer}>
                   <IconSymbol name="info.circle" size={48} color="#8E8E93" />
                   <Text style={styles.noRecommendationsText}>No credit cards available</Text>
@@ -2264,7 +2348,7 @@ export default function CreditJourneyScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1A237E',
+    backgroundColor: '#0066CC',
   },
   header: {
     flexDirection: 'row',
@@ -2305,7 +2389,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.7)',
   },
   segmentButtonTextActive: {
-    color: '#1A237E',
+    color: '#0066CC',
   },
   backButton: {
     padding: scale(8),
@@ -2800,7 +2884,7 @@ const styles = StyleSheet.create({
     padding: scale(12),
     borderRadius: scale(8),
     borderLeftWidth: scale(4),
-    borderLeftColor: '#FF4444',
+    borderLeftColor: '#E31837',
   },
   breakdownContent: {
     flex: 1,
@@ -3560,6 +3644,7 @@ const styles = StyleSheet.create({
   progressBarFill: {
     height: '100%',
     borderRadius: scale(4),
+    backgroundColor: '#0066CC',
   },
   balanceText: {
     fontSize: scaleFont(13),
@@ -3590,7 +3675,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: scaleFont(16),
-    color: '#FF4444',
+    color: '#E31837',
     textAlign: 'center',
     marginBottom: scaleVertical(16),
   },

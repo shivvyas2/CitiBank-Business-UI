@@ -1,197 +1,172 @@
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import CitiLogo from '@/components/citi-logo';
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { ActivityIndicator, Image, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useMemo } from 'react';
+import { ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import CreditScoreProgressBar from '@/components/credit-score-progress-bar';
+import { useSidebar } from '@/contexts/SidebarContext';
 import { useCreditProfile } from '@/hooks/useCreditProfile';
 
-export default function AccountsScreen() {
+export default function HomeScreen() {
   const router = useRouter();
-  const { experianData, isLoading } = useCreditProfile();
-  
-  // Extract credit score - prefer traditional credit score (300-850), fallback to Intelliscore (0-100)
-  const traditionalScore = experianData?.creditScore || experianData?.score || null;
-  const intelliscore = experianData?.data?.scoreInformation?.commercialScore?.score || 
-                       experianData?.data?.scoreInformation?.fsrScore?.score || 
-                       null;
-  
-  // Use traditional score if available, otherwise use Intelliscore
-  const creditScore = traditionalScore !== null ? traditionalScore : intelliscore;
-  const isTraditionalScore = traditionalScore !== null;
+  const { openSidebar } = useSidebar();
+  const { experianData, isLoading: creditLoading } = useCreditProfile();
+
+  // Get credit score data
+  const creditScoreData = useMemo(() => {
+    // Try to get Intelliscore (business) or VantageScore (personal)
+    const intelliscore = experianData?.data?.scoreInformation?.commercialScore?.score;
+    const fsrScore = experianData?.data?.scoreInformation?.fsrScore?.score;
+    const personalScore = experianData?.creditScore || experianData?.score;
+    
+    // Prefer Intelliscore, then FSR, then personal score
+    if (intelliscore) {
+      return {
+        score: intelliscore,
+        scoreType: 'Intelliscore v2',
+        maxScore: 100,
+        category: intelliscore >= 76 ? 'Excellent' : intelliscore >= 51 ? 'Good' : intelliscore >= 26 ? 'Fair' : 'Poor',
+      };
+    } else if (fsrScore) {
+      return {
+        score: fsrScore,
+        scoreType: 'FSR Score',
+        maxScore: 100,
+        category: fsrScore >= 76 ? 'Excellent' : fsrScore >= 51 ? 'Good' : fsrScore >= 26 ? 'Fair' : 'Poor',
+      };
+    } else if (personalScore && personalScore >= 300 && personalScore <= 850) {
+      return {
+        score: personalScore,
+        scoreType: 'VantageScore® 3.0',
+        maxScore: 850,
+        category: personalScore >= 750 ? 'Excellent' : personalScore >= 700 ? 'Good' : personalScore >= 650 ? 'Fair' : 'Poor',
+      };
+    }
+    
+    // Default fallback - use business score (72)
+    return {
+      score: 72,
+      scoreType: 'Intelliscore v2',
+      maxScore: 100,
+      category: 72 >= 76 ? 'Excellent' : 72 >= 51 ? 'Good' : 72 >= 26 ? 'Fair' : 'Poor',
+    };
+  }, [experianData]);
+
+  const handleSeeLatestScore = () => {
+    router.push('/(tabs)/credit-journey');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="white" />
       
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.headerButton}>
-          <View style={styles.walletIcon}>
-            <IconSymbol name="creditcard" size={20} color="#0066CC" />
-            <View style={styles.plusOverlay}>
-              <IconSymbol name="plus" size={12} color="#0066CC" />
-            </View>
-          </View>
+      {/* Top Header with Menu, Logo, and Notifications */}
+      <View style={styles.topHeader}>
+        <TouchableOpacity style={styles.menuButton} onPress={openSidebar}>
+          <IconSymbol name="line.3.horizontal" size={24} color="#000" />
         </TouchableOpacity>
-        
         <View style={styles.logoContainer}>
-          <View style={styles.chaseLogo}>
-            <View style={styles.logoInner} />
-          </View>
+          <CitiLogo />
         </View>
-        
-        <TouchableOpacity style={styles.headerButton}>
-          <IconSymbol name="person.circle.fill" size={28} color="#0066CC" />
+        <View style={styles.rightIcons}>
+          <TouchableOpacity style={styles.iconButton}>
+            <IconSymbol name="envelope" size={20} color="#0066CC" />
+            <View style={styles.messageBadge}>
+              <Text style={styles.badgeText}>0</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.iconButton}>
+            <IconSymbol name="bell" size={20} color="#000" />
+            <View style={styles.notificationDot} />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* App Title */}
+      <View style={styles.titleContainer}>
+        <Text style={styles.appTitle}>CitiBusiness® Online Mobile</Text>
+      </View>
+
+      {/* Main Content */}
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Transactions Awaiting Approval Card */}
+        <TouchableOpacity style={styles.card}>
+          <View style={styles.cardContent}>
+            <Text style={styles.cardTitle}>Transactions Awaiting Approval</Text>
+            <View style={styles.cardValueContainer}>
+              <Text style={styles.cardValue}>0</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={20} color="#0066CC" style={styles.chevron} />
+          </View>
         </TouchableOpacity>
-      </View>
 
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <Text style={styles.searchPlaceholder}>What are you looking for?</Text>
+        {/* Page Indicator */}
+        <View style={styles.pageIndicator}>
+          <View style={styles.pageDot} />
         </View>
-        <TouchableOpacity style={styles.helpButton}>
-          <IconSymbol name="questionmark" size={20} color="white" />
+
+        {/* Deposit Accounts Card */}
+        <TouchableOpacity style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardHeaderText}>Deposit Accounts</Text>
+            <IconSymbol name="chevron.down" size={20} color="#666" />
+          </View>
+          <View style={styles.cardBody}>
+            <Text style={styles.cardLabel}>Current Available:</Text>
+            <Text style={styles.cardAmount}>$2,599.46</Text>
+            <Text style={styles.cardSubtext}>3 Accounts</Text>
+          </View>
         </TouchableOpacity>
-      </View>
 
-      {/* Quick Actions */}
-      <View style={styles.quickActionsContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.quickActions}>
-          <TouchableOpacity style={styles.actionButton}>
-            <IconSymbol name="plus" size={16} color="#0066CC" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <Text style={styles.actionText}>Send | Zelle®</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <Text style={styles.actionText}>Deposit checks</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <Text style={styles.actionText}>Pay bills</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </View>
-
-      {/* Accounts Section */}
-      <ScrollView style={styles.accountsSection} showsVerticalScrollIndicator={false}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Accounts</Text>
-          <TouchableOpacity>
-            <IconSymbol name="ellipsis" size={20} color="#999999" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Bank Accounts */}
-        <View style={styles.accountCard}>
+        {/* Credit Accounts Card */}
+        <TouchableOpacity style={styles.card}>
           <View style={styles.cardHeader}>
-            <Text style={styles.cardHeaderText}>Bank accounts (2)</Text>
+            <Text style={styles.cardHeaderText}>Credit Accounts</Text>
+            <IconSymbol name="chevron.down" size={20} color="#666" />
           </View>
-          <View style={styles.cardContent}>
-            <TouchableOpacity style={styles.accountItem}>
-              <Text style={styles.accountName}>BUSINESS ACCOUNT (...8472)</Text>
-              <IconSymbol name="chevron.right" size={16} color="#999999" />
-            </TouchableOpacity>
-            <View style={styles.balanceContainer}>
-              <View style={styles.balanceTextContainer}>
-                <Text style={styles.balanceAmount}>$12,847.32</Text>
-                <Text style={styles.balanceLabel}>Available balance</Text>
-              </View>
-              <View style={styles.verticalLine} />
-            </View>
+          <View style={styles.cardBody}>
+            <Text style={styles.cardLabel}>Payoff Amount:</Text>
+            <Text style={styles.cardAmount}>$0.00</Text>
+            <Text style={styles.cardSubtext}>0 Accounts</Text>
           </View>
-        </View>
+        </TouchableOpacity>
 
-        <View style={styles.accountCard}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardHeaderText}>Business Checking</Text>
+        {/* Credit Score Card */}
+        <View style={styles.creditScoreCard}>
+          <Text style={styles.creditScoreTitle}>Business Credit Journey</Text>
+          <Text style={styles.creditScoreSubtitle}>Powered By Lumiq AI</Text>
+          <Text style={styles.creditScoreType}>{creditScoreData.scoreType}</Text>
+          
+          <View style={styles.creditScoreDisplay}>
+            <Text style={styles.creditScoreValue}>{creditScoreData.score}</Text>
+            <Text style={styles.creditScoreCategory}>{creditScoreData.category}</Text>
           </View>
-          <View style={styles.cardContent}>
-            <TouchableOpacity style={styles.accountItem}>
-              <Text style={styles.accountName}>CHASE BUSINESS (...2951)</Text>
-              <IconSymbol name="chevron.right" size={16} color="#999999" />
-            </TouchableOpacity>
-            <View style={styles.balanceContainer}>
-              <View style={styles.balanceTextContainer}>
-                <Text style={styles.balanceAmount}>$8,429.67</Text>
-                <Text style={styles.balanceLabel}>Available balance</Text>
-              </View>
-              <View style={styles.verticalLine} />
-            </View>
-          </View>
-        </View>
 
-        {/* Credit Cards */}
-        <View style={styles.accountCard}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardHeaderText}>Credit cards (1)</Text>
-          </View>
-          <View style={styles.cardContent}>
-            <TouchableOpacity style={styles.accountItem}>
-              <Text style={styles.accountName}>Chase Ink Business Cash Card (...7384)</Text>
-              <IconSymbol name="chevron.right" size={16} color="#999999" />
-            </TouchableOpacity>
-            
-            {/* Credit Card Image */}
-            <Image
-              source={require('@/assets/cards/card1.png')}
-              style={styles.creditCardImage}
-            />
-            
-            <View style={styles.balanceContainer}>
-              <View style={styles.balanceTextContainer}>
-                <Text style={styles.balanceAmount}>$1,247.89</Text>
-                <Text style={styles.balanceLabel}>Current balance</Text>
-              </View>
-              <View style={styles.verticalLine} />
-            </View>
-            
-            <View style={styles.paymentStatus}>
-              <IconSymbol name="checkmark.circle.fill" size={16} color="#00AA00" />
-              <Text style={styles.paymentText}>You don't have a payment due right now.</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Lumiq Credit Journey promo */}
-        <View style={styles.promoCard}>
-          <View style={styles.promoContent}>
-            <View style={styles.promoLeft}>
-              <Text style={styles.promoHeading}>Lumiq Credit Journey</Text>
-              <Text style={styles.promoTitle}>Get your latest credit score</Text>
-              <Text style={styles.promoProvider}>Intelliscore v2</Text>
-            </View>
-          </View>
-          <View style={styles.progressBarWrapper}>
-            {isLoading ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="small" color="#0066CC" />
-                <Text style={styles.loadingText}>Loading score...</Text>
-              </View>
-            ) : creditScore !== null ? (
-              <CreditScoreProgressBar 
-                score={creditScore} 
-                minScore={isTraditionalScore ? 300 : 0} 
-                maxScore={isTraditionalScore ? 850 : 100}
+          {/* Progress Bar */}
+          <View style={styles.progressBarContainer}>
+            <View style={styles.progressBarBackground}>
+              <View 
+                style={[
+                  styles.progressBarFill,
+                  { 
+                    width: `${(creditScoreData.score / creditScoreData.maxScore) * 100}%`,
+                    backgroundColor: '#0066CC',
+                  }
+                ]} 
               />
-            ) : (
-              <CreditScoreProgressBar 
-                score={603} 
-                minScore={300} 
-                maxScore={850}
-              />
-            )}
+            </View>
+            <View style={styles.progressBarLabels}>
+              <Text style={styles.progressBarLabel}>0</Text>
+              <Text style={styles.progressBarLabel}>{creditScoreData.maxScore}</Text>
+            </View>
           </View>
-          <TouchableOpacity style={styles.promoButton} onPress={() => router.push('/credit-journey')}>
-            <Text style={styles.promoButtonText}>See latest score</Text>
+
+          <TouchableOpacity 
+            style={styles.seeLatestScoreButton}
+            onPress={handleSeeLatestScore}>
+            <Text style={styles.seeLatestScoreButtonText}>See latest score</Text>
           </TouchableOpacity>
         </View>
-
-        {/* Link External Accounts */}
-        <TouchableOpacity style={styles.linkAccounts}>
-          <Text style={styles.linkAccountsText}>Link external accounts</Text>
-          <IconSymbol name="chevron.right" size={16} color="#999999" />
-        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -202,301 +177,225 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
   },
-  header: {
+  topHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: 'white',
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 12,
   },
-  headerButton: {
-    padding: 12,
-    borderRadius: 8,
-  },
-  walletIcon: {
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  plusOverlay: {
-    position: 'absolute',
-    top: -2,
-    right: -2,
-    backgroundColor: 'white',
-    borderRadius: 8,
-    width: 16,
-    height: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#0066CC',
+  menuButton: {
+    padding: 8,
   },
   logoContainer: {
     alignItems: 'center',
     justifyContent: 'center',
   },
-  chaseLogo: {
-    width: 44,
-    height: 44,
+  rightIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  iconButton: {
+    padding: 8,
+    position: 'relative',
+  },
+  messageBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
     backgroundColor: '#0066CC',
-    borderRadius: 6,
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 6,
+  },
+  badgeText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  notificationDot: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#FF3B30',
+  },
+  titleContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  appTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#000',
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
+  card: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  logoInner: {
-    width: 24,
-    height: 24,
-    backgroundColor: 'white',
-    borderRadius: 2,
-    transform: [{ rotate: '45deg' }],
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 20,
-    backgroundColor: 'white',
-  },
-  searchBar: {
-    flex: 1,
-    backgroundColor: '#F8F9FA',
-    borderRadius: 12,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    marginRight: 16,
-    borderWidth: 0,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
     shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  searchPlaceholder: {
-    color: '#8E8E93',
-    fontSize: 17,
-    fontWeight: '400',
-  },
-  helpButton: {
-    padding: 12,
-    backgroundColor: '#0066CC',
-    borderRadius: 20,
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  quickActionsContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 0,
-  },
-  quickActions: {
-    flexDirection: 'row',
-  },
-  actionButton: {
-    backgroundColor: 'white',
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    marginRight: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: 60,
-    height: 32,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 1,
-    elevation: 1,
-  },
-  actionText: {
-    fontSize: 11,
-    fontWeight: '500',
-    color: '#1C1C1E',
-    textAlign: 'center',
-  },
-  accountsSection: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 0,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#000000',
-  },
-  accountCard: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    marginBottom: 16,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-  },
-  cardHeader: {
-    backgroundColor: '#0066CC',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  cardHeaderText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
+    shadowRadius: 4,
+    elevation: 2,
   },
   cardContent: {
-    padding: 16,
-  },
-  accountItem: {
+    padding: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
   },
-  accountName: {
+  cardTitle: {
     fontSize: 16,
-    fontWeight: '500',
-    color: '#000000',
-  },
-  balanceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  balanceTextContainer: {
+    color: '#666',
     flex: 1,
   },
-  balanceAmount: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#000000',
-    marginBottom: 4,
+  cardValueContainer: {
+    marginHorizontal: 16,
   },
-  balanceLabel: {
-    fontSize: 14,
-    color: '#666666',
+  cardValue: {
+    fontSize: 48,
+    fontWeight: '700',
+    color: '#000',
   },
-  verticalLine: {
-    width: 1,
-    height: 40,
-    backgroundColor: '#E5E5E5',
-    marginLeft: 16,
-  },
-  creditCardImage: {
-    marginBottom: 16,
-    width: 100,
-    height: 65,
-    borderRadius: 8,
-    resizeMode: 'cover',
-  },
-  paymentStatus: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  paymentText: {
-    fontSize: 14,
-    color: '#000000',
+  chevron: {
     marginLeft: 8,
   },
-  linkAccounts: {
+  pageIndicator: {
+    alignItems: 'center',
+    marginVertical: 8,
+  },
+  pageDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#0066CC',
+  },
+  cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: 'white',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
+    padding: 20,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
   },
-  linkAccountsText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#000000',
+  cardHeaderText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000',
   },
-  promoCard: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    padding: 24,
-    marginBottom: 16,
-    flexDirection: 'column',
-    alignItems: 'center',
+  cardBody: {
+    padding: 20,
+    paddingTop: 12,
   },
-  promoContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    width: '100%',
-    marginBottom: 20,
+  cardLabel: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 8,
   },
-  promoLeft: {
-    flex: 1,
-  },
-  promoHeading: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#111',
-    marginBottom: 4,
-  },
-  promoTitle: {
-    fontSize: 17,
+  cardAmount: {
+    fontSize: 32,
+    fontWeight: '700',
     color: '#000',
     marginBottom: 8,
   },
-  promoProvider: {
+  cardSubtext: {
     fontSize: 14,
-    color: '#6B7280',
+    color: '#666',
   },
-  progressBarWrapper: {
-    width: '100%',
+  creditScoreCard: {
+    backgroundColor: '#F5F5F5',
+    borderRadius: 16,
+    padding: 24,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
+  },
+  creditScoreTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#000',
+    marginBottom: 4,
+  },
+  creditScoreSubtitle: {
+    fontSize: 13,
+    color: '#666',
+    marginBottom: 8,
+    fontStyle: 'italic',
+  },
+  creditScoreType: {
+    fontSize: 13,
+    color: '#666',
     marginBottom: 20,
   },
-  promoButton: {
-    alignSelf: 'flex-end',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 24,
-    borderWidth: 2,
-    borderColor: '#0B6BD3',
-  },
-  promoButtonText: {
-    color: '#0B6BD3',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  loadingContainer: {
-    alignItems: 'center',
+  creditScoreDisplay: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
     justifyContent: 'center',
-    paddingVertical: 20,
+    marginBottom: 24,
   },
-  loadingText: {
-    marginTop: 8,
+  creditScoreValue: {
+    fontSize: 64,
+    fontWeight: '700',
+    color: '#000',
+    marginRight: 12,
+  },
+  creditScoreCategory: {
+    fontSize: 18,
+    fontWeight: '400',
+    color: '#000',
+  },
+  progressBarContainer: {
+    marginBottom: 20,
+  },
+  progressBarBackground: {
+    height: 8,
+    backgroundColor: '#E5E5E5',
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  progressBarFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  progressBarLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  progressBarLabel: {
+    fontSize: 12,
+    color: '#999',
+  },
+  seeLatestScoreButton: {
+    alignSelf: 'flex-end',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#0066CC',
+    backgroundColor: 'white',
+  },
+  seeLatestScoreButtonText: {
     fontSize: 14,
-    color: '#666666',
+    fontWeight: '500',
+    color: '#0066CC',
   },
 });
-

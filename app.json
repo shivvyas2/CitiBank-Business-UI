@@ -1,16 +1,16 @@
 {
   "expo": {
-    "name": "Chase_UI",
-    "slug": "Chase_UI",
+    "name": "Citibank UI",
+    "slug": "Citibank-UI",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "chaseui",
+    "scheme": "citibank",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.shivvyas.Chase-UI",
+      "bundleIdentifier": "com.shivvyas.Citibank-UI",
       "buildNumber": "4"
     },
     "android": {
